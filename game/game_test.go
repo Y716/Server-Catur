@@ -34,3 +34,14 @@ func TestMovePiece(t *testing.T) {
 		t.Fatalf("returned %+v expeceted %+v", testBoard[toRank][toFile], whitePawn)
 	}
 }
+
+func TestMovePawn(t *testing.T) {
+	// Test MovePiece func
+	testBoard := board.NewBoard()
+	fromSquare := "e2"
+	toSquare := "e4"
+
+	MovePiece(&testBoard, fromSquare, toSquare)
+
+	//Test set
+}
