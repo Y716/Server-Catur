@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -30,9 +31,14 @@ func boardRepToCompRep(square string) (int, int) {
 	return file, rank*(-1) + 8
 }
 
-func MovePiece(from string, to string, Board *[8][8]board.Piece) {
+func MovePiece(Board *[8][8]board.Piece, from string, to string) {
 	fromFile, fromRank := boardRepToCompRep(from)
 	toFile, toRank := boardRepToCompRep(to)
+
+	if !isValidMove(Board, from, to) {
+		fmt.Println("Invalid Move")
+		return
+	}
 
 	movedPiece := Board[fromRank][fromFile]
 	Board[fromRank][fromFile] = board.Piece{
@@ -40,6 +46,4 @@ func MovePiece(from string, to string, Board *[8][8]board.Piece) {
 		PieceColor: board.NoPieceColor,
 	}
 	Board[toRank][toFile] = movedPiece
-
-	board.PrintBoard(*Board)
 }

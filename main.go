@@ -13,14 +13,15 @@ import (
 func main() {
 	Board := board.NewBoard()
 
-	for i := 0; i < 3; i++ {
+	for {
+		board.PrintBoard(Board)
 		scanner := bufio.NewScanner(os.Stdin)
 		fmt.Print("Your move: ")
 		if scanner.Scan() {
 
 			input := scanner.Text()
 			notations := strings.Split(input, " ")
-			game.MovePiece(notations[0], notations[1], &Board)
+			game.MovePiece(&Board, notations[0], notations[1])
 		}
 	}
 

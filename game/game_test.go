@@ -6,13 +6,13 @@ import (
 	"github.com/Y716/Server-Catur/board"
 )
 
-func TestGame(t *testing.T) {
+func TestMovePiece(t *testing.T) {
 	// Test MovePiece func
 	testBoard := board.NewBoard()
 	fromSquare := "e2"
 	toSquare := "e4"
 
-	MovePiece(fromSquare, toSquare, &testBoard)
+	MovePiece(&testBoard, fromSquare, toSquare)
 
 	fromFile, fromRank := boardRepToCompRep(fromSquare)
 	toFile, toRank := boardRepToCompRep(toSquare)
