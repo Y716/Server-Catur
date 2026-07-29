@@ -90,3 +90,63 @@ func TestMovePawn(t *testing.T) {
 		})
 	}
 }
+
+func TestMoveRook(t *testing.T) {
+	// Test MovePiece func
+	tests := map[string]struct {
+		fromSquare string
+		toSquare   string
+		result     board.Piece
+	}{
+		"E5toE1": {
+			fromSquare: "e5",
+			toSquare:   "e1",
+			result: board.Piece{
+				PieceType:  board.Rook,
+				PieceColor: board.White,
+			},
+		},
+		"E5toB5Take": {
+			fromSquare: "e5",
+			toSquare:   "b5",
+			result: board.Piece{
+				PieceType:  board.Rook,
+				PieceColor: board.White,
+			},
+		},
+		"E5toG5Blocked": {
+			fromSquare: "e5",
+			toSquare:   "g5",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.White,
+			},
+		},
+		"E5toA5Blocked": {
+			fromSquare: "e5",
+			toSquare:   "a5",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			testBoard := [8][8]board.Piece{}
+			testBoard[3][4] = board.Piece{PieceType: board.Rook, PieceColor: board.White} //Rook Putih di E5
+			testBoard[3][1] = board.Piece{PieceType: board.Pawn, PieceColor: board.Black} //Pawn Hitam di B5
+			testBoard[3][6] = board.Piece{PieceType: board.Pawn, PieceColor: board.White} //Pawn Putih di G5
+
+			MovePiece(&testBoard, test.fromSquare, test.toSquare)
+			toFile, toRank := boardRepToCompRep(test.toSquare)
+			gotPiece := testBoard[toRank][toFile]
+			if expeceted := test.result; gotPiece != expeceted {
+				t.Fatalf("returned %+v expeceted %+v", gotPiece, expeceted)
+			}
+		})
+	}
+}
