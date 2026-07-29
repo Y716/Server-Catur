@@ -12,7 +12,7 @@ func TestMovePiece(t *testing.T) {
 	fromSquare := "e2"
 	toSquare := "e4"
 
-	MovePiece(&testBoard, fromSquare, toSquare)
+	MovePiece(&testBoard, fromSquare, toSquare, true)
 
 	fromFile, fromRank := boardRepToCompRep(fromSquare)
 	toFile, toRank := boardRepToCompRep(toSquare)
@@ -81,7 +81,7 @@ func TestMovePawn(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			testBoard := board.NewBoard()
-			MovePiece(&testBoard, test.fromSquare, test.toSquare)
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
 			toFile, toRank := boardRepToCompRep(test.toSquare)
 			gotPiece := testBoard[toRank][toFile]
 			if expeceted := test.result; gotPiece != expeceted {
@@ -141,7 +141,7 @@ func TestMoveRook(t *testing.T) {
 			testBoard[3][1] = board.Piece{PieceType: board.Pawn, PieceColor: board.Black} //Pawn Hitam di B5
 			testBoard[3][6] = board.Piece{PieceType: board.Pawn, PieceColor: board.White} //Pawn Putih di G5
 
-			MovePiece(&testBoard, test.fromSquare, test.toSquare)
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
 			toFile, toRank := boardRepToCompRep(test.toSquare)
 			gotPiece := testBoard[toRank][toFile]
 			if expeceted := test.result; gotPiece != expeceted {

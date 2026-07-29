@@ -4,11 +4,15 @@ import (
 	"github.com/Y716/Server-Catur/board"
 )
 
-func isValidMove(Board *[8][8]board.Piece, from string, to string) bool {
+func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag bool) bool {
 	fromFile, fromRank := boardRepToCompRep(from)
 	toFile, toRank := boardRepToCompRep(to)
 	pieceType := Board[fromRank][fromFile].PieceType
 	pieceColor := Board[fromRank][fromFile].PieceColor
+
+	if colorFlag && pieceColor != board.White || !colorFlag && pieceColor != board.Black {
+		return false
+	}
 
 	switch pieceType {
 	case board.Pawn:

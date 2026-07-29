@@ -12,16 +12,25 @@ import (
 
 func main() {
 	Board := board.NewBoard()
-
+	colorFlag := true //true equals white, false equals black
 	for {
 		board.PrintBoard(Board)
 		scanner := bufio.NewScanner(os.Stdin)
-		fmt.Print("Your move: ")
+		if colorFlag == true {
+			fmt.Print("White's move: ")
+		} else {
+			fmt.Print("Black's Move: ")
+		}
+
 		if scanner.Scan() {
 
 			input := scanner.Text()
 			notations := strings.Split(input, " ")
-			game.MovePiece(&Board, notations[0], notations[1])
+			isValidMove := game.MovePiece(&Board, notations[0], notations[1], colorFlag)
+
+			if isValidMove {
+				colorFlag = !colorFlag
+			}
 		}
 	}
 

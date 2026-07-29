@@ -31,13 +31,13 @@ func boardRepToCompRep(square string) (int, int) {
 	return file, rank*(-1) + 8
 }
 
-func MovePiece(Board *[8][8]board.Piece, from string, to string) {
+func MovePiece(Board *[8][8]board.Piece, from string, to string, colorFlag bool) bool {
 	fromFile, fromRank := boardRepToCompRep(from)
 	toFile, toRank := boardRepToCompRep(to)
 
-	if !isValidMove(Board, from, to) {
+	if !isValidMove(Board, from, to, colorFlag) {
 		fmt.Println("Invalid Move")
-		return
+		return false
 	}
 
 	movedPiece := Board[fromRank][fromFile]
@@ -46,4 +46,6 @@ func MovePiece(Board *[8][8]board.Piece, from string, to string) {
 		PieceColor: board.NoPieceColor,
 	}
 	Board[toRank][toFile] = movedPiece
+
+	return true
 }
