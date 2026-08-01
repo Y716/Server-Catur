@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math"
+
 	"github.com/Y716/Server-Catur/board"
 )
 
@@ -45,7 +47,7 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 			}
 		} else {
 			if (toFile == fromFile+1 || toFile == fromFile-1) &&
-				Board[toRank][toFile].PieceColor != pieceColor {
+				(Board[toRank][toFile].PieceColor != pieceColor) {
 				diff := fromRank - toRank
 				if diff == -1 && pieceColor == board.Black ||
 					diff == 1 && pieceColor == board.White {
@@ -98,6 +100,15 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 			return true
 
 		}
+
+	case board.Knight:
+		if (math.Abs(float64(toFile-fromFile)) == 2 && math.Abs(float64(toRank-fromRank)) == 1) ||
+			(math.Abs(float64(toFile-fromFile)) == 1 && math.Abs(float64(toRank-fromRank)) == 2) {
+			if pieceColor != Board[toRank][toFile].PieceColor {
+				return true
+			}
+		}
+		return false
 	}
 
 	return false
