@@ -16,6 +16,10 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 		return false
 	}
 
+	if to == from {
+		return false
+	}
+
 	switch pieceType {
 	case board.Pawn:
 		if Board[toRank][toFile].PieceType == board.NoPieceType {
@@ -109,7 +113,62 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 			}
 		}
 		return false
-	}
 
+	case board.Bishop:
+
+		if Board[toRank][toFile].PieceColor == pieceColor {
+			return false
+		}
+
+		if math.Abs(float64(toFile-fromFile)) == math.Abs(float64(toRank-fromRank)) {
+			diffFile := toFile - fromFile
+			diffRank := toRank - fromRank
+			f := fromFile
+			r := fromRank
+
+			if diffFile > 0 && diffRank > 0 {
+				f++
+				r++
+				for range diffFile - 1 {
+					if Board[r][f].PieceType != board.NoPieceType {
+						return false
+					}
+					f++
+					r++
+				}
+			} else if diffFile > 0 && diffRank < 0 {
+				f++
+				r--
+				for range diffFile - 1 {
+					if Board[r][f].PieceType != board.NoPieceType {
+						return false
+					}
+					f++
+					r--
+				}
+			} else if diffFile < 0 && diffRank < 0 {
+				f--
+				r--
+				for range diffFile*(-1) - 1 {
+					if Board[r][f].PieceType != board.NoPieceType {
+						return false
+					}
+					f--
+					r--
+				}
+			} else if diffFile < 0 && diffRank > 0 {
+				f--
+				r++
+				for range diffRank - 1 {
+					if Board[r][f].PieceType != board.NoPieceType {
+						return false
+					}
+					f--
+					r++
+				}
+			}
+			return true
+		}
+	}
 	return false
 }
