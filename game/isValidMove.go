@@ -66,6 +66,11 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 		// Rook hanya bisa gerak horizontal dan vertikal (File beda tapi Rank sama atau Rank beda File sama (antara fromSquare dan toSquare))
 		// Rook terhalang oleh bidak ke arah toSquarenya.Jika ada bidak, maka invalid.
 		// Rook dapat memakan bidak yang berlawanan dengan warnanya
+
+		if Board[toRank][toFile].PieceColor == pieceColor {
+			break
+		}
+
 		if (toFile == fromFile && fromRank != toRank) || (toRank == fromRank && fromFile != toFile) {
 			if fromRank != toRank {
 				if fromRank < toRank {
@@ -98,9 +103,6 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 				}
 			}
 
-			if Board[toRank][toFile].PieceColor == pieceColor {
-				break
-			}
 			return true
 
 		}
@@ -168,6 +170,99 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 				}
 			}
 			return true
+		}
+
+	case board.Queen:
+		// Queen bisa gerak horizontal, vertikal (File beda tapi Rank sama atau Rank beda File sama (antara fromSquare dan toSquare), dan diagonal (selisih File dan Rank sama)
+		// Queen terhalang oleh bidak ke arah toSquarenya.Jika ada bidak, maka invalid.
+
+		if Board[toRank][toFile].PieceColor == pieceColor {
+			return false
+		}
+
+		if (toFile == fromFile && fromRank != toRank) || (toRank == fromRank && fromFile != toFile) {
+			if fromRank != toRank {
+				if fromRank < toRank {
+					for i := fromRank + 1; i < toRank; i++ {
+						if Board[i][fromFile].PieceType != board.NoPieceType {
+							return false
+						}
+					}
+				} else {
+					for i := fromRank - 1; i > toRank; i-- {
+						if Board[i][fromFile].PieceType != board.NoPieceType {
+							return false
+						}
+					}
+				}
+
+			} else if fromFile != toFile {
+				if fromFile < toFile {
+					for i := fromFile + 1; i < toFile; i++ {
+						if Board[fromRank][i].PieceType != board.NoPieceType {
+							return false
+						}
+					}
+				} else {
+					for i := fromFile - 1; i > toFile; i-- {
+						if Board[fromRank][i].PieceType != board.NoPieceType {
+							return false
+						}
+					}
+				}
+			}
+			return true
+		} else {
+			if math.Abs(float64(toFile-fromFile)) == math.Abs(float64(toRank-fromRank)) {
+				diffFile := toFile - fromFile
+				diffRank := toRank - fromRank
+				f := fromFile
+				r := fromRank
+
+				if diffFile > 0 && diffRank > 0 {
+					f++
+					r++
+					for range diffFile - 1 {
+						if Board[r][f].PieceType != board.NoPieceType {
+							return false
+						}
+						f++
+						r++
+					}
+				} else if diffFile > 0 && diffRank < 0 {
+					f++
+					r--
+					for range diffFile - 1 {
+						if Board[r][f].PieceType != board.NoPieceType {
+							return false
+						}
+						f++
+						r--
+					}
+				} else if diffFile < 0 && diffRank < 0 {
+					f--
+					r--
+					for range diffFile*(-1) - 1 {
+						if Board[r][f].PieceType != board.NoPieceType {
+							return false
+						}
+						f--
+						r--
+					}
+				} else if diffFile < 0 && diffRank > 0 {
+					f--
+					r++
+					for range diffRank - 1 {
+						if Board[r][f].PieceType != board.NoPieceType {
+							return false
+						}
+						f--
+						r++
+					}
+				}
+				return true
+			}
+
 		}
 	}
 	return false
