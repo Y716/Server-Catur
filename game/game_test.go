@@ -270,3 +270,158 @@ func TestMoveBishop(t *testing.T) {
 		})
 	}
 }
+
+func TestMoveQueen(t *testing.T) {
+	// Test MovePiece func
+	tests := map[string]struct {
+		fromSquare string
+		toSquare   string
+		result     board.Piece
+	}{
+		"E4toH7": {
+			fromSquare: "e4",
+			toSquare:   "h7",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toA8Take": {
+			fromSquare: "e4",
+			toSquare:   "a8",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toB1": {
+			fromSquare: "e4",
+			toSquare:   "b1",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toG2": {
+			fromSquare: "e4",
+			toSquare:   "g2",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toH1Blocked": {
+			fromSquare: "e4",
+			toSquare:   "h1",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.White,
+			},
+		},
+		"E4toE1": {
+			fromSquare: "e4",
+			toSquare:   "e1",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toB5Take": {
+			fromSquare: "e4",
+			toSquare:   "b4",
+			result: board.Piece{
+				PieceType:  board.Queen,
+				PieceColor: board.White,
+			},
+		},
+		"E4toG5Blocked": {
+			fromSquare: "e4",
+			toSquare:   "g4",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.White,
+			},
+		},
+		"E4toA5Blocked": {
+			fromSquare: "e4",
+			toSquare:   "a4",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			testBoard := [8][8]board.Piece{}
+			testBoard[4][4] = board.Piece{PieceType: board.Queen, PieceColor: board.White} //Queen Putih di E4
+			testBoard[0][0] = board.Piece{PieceType: board.Pawn, PieceColor: board.Black}  //Pawn Hitam di A8
+			testBoard[7][7] = board.Piece{PieceType: board.Pawn, PieceColor: board.White}  //Pawn Putih di H1
+
+			testBoard[4][1] = board.Piece{PieceType: board.Pawn, PieceColor: board.Black} //Pawn Hitam di B4
+			testBoard[4][6] = board.Piece{PieceType: board.Pawn, PieceColor: board.White} //Pawn Putih di G4
+
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
+			toFile, toRank := boardRepToCompRep(test.toSquare)
+			gotPiece := testBoard[toRank][toFile]
+			if expeceted := test.result; gotPiece != expeceted {
+				t.Fatalf("returned %+v expeceted %+v", gotPiece, expeceted)
+			}
+		})
+	}
+}
+
+func TestMoveKing(t *testing.T) {
+	// Test MovePiece func
+	tests := map[string]struct {
+		fromSquare string
+		toSquare   string
+		result     board.Piece
+	}{
+		"E4toF4": {
+			fromSquare: "e4",
+			toSquare:   "f4",
+			result: board.Piece{
+				PieceType:  board.King,
+				PieceColor: board.White,
+			},
+		},
+		"E4toE5Take": {
+			fromSquare: "e4",
+			toSquare:   "e5",
+			result: board.Piece{
+				PieceType:  board.King,
+				PieceColor: board.White,
+			},
+		},
+		"E4toE3Blocked": {
+			fromSquare: "e4",
+			toSquare:   "e3",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.White,
+			},
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			testBoard := [8][8]board.Piece{}
+			testBoard[4][4] = board.Piece{PieceType: board.King, PieceColor: board.White} //King Putih di E4
+			testBoard[3][4] = board.Piece{PieceType: board.Pawn, PieceColor: board.Black} //Pawn Hitam di E5
+			testBoard[5][4] = board.Piece{PieceType: board.Pawn, PieceColor: board.White} //Pawn Putih di E3
+
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
+			toFile, toRank := boardRepToCompRep(test.toSquare)
+			gotPiece := testBoard[toRank][toFile]
+			if expeceted := test.result; gotPiece != expeceted {
+				t.Fatalf("returned %+v expeceted %+v", gotPiece, expeceted)
+			}
+		})
+	}
+}
