@@ -63,9 +63,6 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 
 		}
 	case board.Rook:
-		// Rook hanya bisa gerak horizontal dan vertikal (File beda tapi Rank sama atau Rank beda File sama (antara fromSquare dan toSquare))
-		// Rook terhalang oleh bidak ke arah toSquarenya.Jika ada bidak, maka invalid.
-		// Rook dapat memakan bidak yang berlawanan dengan warnanya
 
 		if Board[toRank][toFile].PieceColor == pieceColor {
 			break
@@ -263,6 +260,12 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 				return true
 			}
 
+		}
+
+	case board.King:
+		if (math.Abs(float64(toFile-fromFile)) <= 1 && math.Abs(float64(toRank-fromRank)) <= 1) &&
+			(Board[toRank][toFile].PieceColor != pieceColor) {
+			return true
 		}
 	}
 	return false
