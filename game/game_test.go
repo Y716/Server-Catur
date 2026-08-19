@@ -495,3 +495,47 @@ func TestMoveKing(t *testing.T) {
 		})
 	}
 }
+
+func TestKingInCheck(t *testing.T){
+	// Test MovePiece func
+	tests := map[string]struct {
+		fromSquare string
+		toSquare   string
+		result     board.Piece
+	}{
+		"E4toE5Blocked": {
+			fromSquare: "e4",
+			toSquare:   "e5",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+		"E4toF4": {
+			fromSquare: "e4",
+			toSquare:   "f4",
+			result: board.Piece{
+				PieceType:  board.King,
+				PieceColor: board.White,
+			},
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			testBoard := [8][8]board.Piece{}
+			testBoard[4][4] = board.Piece{PieceType: board.King, PieceColor: board.White} //King Putih di E4
+			testBoard[3][7] = board.Piece{PieceType: board.Rook, PieceColor: board.Black} //Pawn Hitam di H5
+			testBoard[5][7] = board.Piece{PieceType: board.Rook, PieceColor: board.Black} //Pawn Putih di H3
+
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
+			toFile, toRank := boardRepToCompRep(test.toSquare)
+			gotPiece := testBoard[toRank][toFile]
+			if expeceted := test.result; gotPiece != expeceted {
+				t.Fatalf("returned %+v expeceted %+v", gotPiece, expeceted)
+			}
+		})
+	}
+}
