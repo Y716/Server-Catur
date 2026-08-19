@@ -6,17 +6,12 @@ import (
 	"github.com/Y716/Server-Catur/board"
 )
 
-func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag bool) bool {
-	fromFile, fromRank := boardRepToCompRep(from)
-	toFile, toRank := boardRepToCompRep(to)
+func isValidMove(Board *[8][8]board.Piece, fromFile, toFile, fromRank, toRank int) bool {
 	pieceType := Board[fromRank][fromFile].PieceType
 	pieceColor := Board[fromRank][fromFile].PieceColor
 
-	if colorFlag && pieceColor != board.White || !colorFlag && pieceColor != board.Black {
-		return false
-	}
 
-	if to == from {
+	if toFile == fromFile && toRank == fromRank{
 		return false
 	}
 
@@ -267,6 +262,9 @@ func isValidMove(Board *[8][8]board.Piece, from string, to string, colorFlag boo
 			(Board[toRank][toFile].PieceColor != pieceColor) {
 			return true
 		}
+	case board.NoPieceType:
+		return false
 	}
 	return false
 }
+

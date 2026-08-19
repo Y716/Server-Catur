@@ -34,18 +34,35 @@ func boardRepToCompRep(square string) (int, int) {
 func MovePiece(Board *[8][8]board.Piece, from string, to string, colorFlag bool) bool {
 	fromFile, fromRank := boardRepToCompRep(from)
 	toFile, toRank := boardRepToCompRep(to)
+	
+	pieceColor := Board[fromRank][fromFile].PieceColor
 
-	if !isValidMove(Board, from, to, colorFlag) {
-		fmt.Println("Invalid Move")
+	if colorFlag && pieceColor != board.White || !colorFlag && pieceColor != board.Black {
 		return false
 	}
 
-	movedPiece := Board[fromRank][fromFile]
+	if !isValidMove(Board, fromFile, toFile, fromRank, toRank) {
+		fmt.Println("Invalid Move")
+		return false
+	}
+	simulationBoard := *Board
+
+	movedPiece := simulationBoard[fromRank][fromFile]
+	simulationBoard[fromRank][fromFile] = board.Piece{
+		PieceType:  board.NoPieceType,
+		PieceColor: board.NoPieceColor,
+	}
+	simulationBoard[toRank][toFile] = movedPiece
+
+	if isKingInCheck(&simulationBoard, colorFlag) {
+		fmt.Println("King is in Check!")
+		return false
+	}
+
 	Board[fromRank][fromFile] = board.Piece{
 		PieceType:  board.NoPieceType,
 		PieceColor: board.NoPieceColor,
 	}
 	Board[toRank][toFile] = movedPiece
-
 	return true
 }

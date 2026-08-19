@@ -75,11 +75,28 @@ func getUniCodePiece(piece Piece) string {
 }
 
 func PrintBoard(Board [8][8]Piece) {
+	fmt.Print("  ")
+	for ch := 'A'; ch <= 'H'; ch++{
+		fmt.Printf("%c ", ch)
+	}
+	fmt.Println()
 	for i := 0; i < len(Board); i++ {
 		for j := 0; j < len(Board); j++ {
+			if j == 0{
+				fmt.Printf("%d ", (i*-1)+8)
+			}
 			uniCodePiece := getUniCodePiece(Board[i][j])
 			fmt.Print(uniCodePiece + " ")
+			if j == 7{
+				fmt.Printf("%d", (i*-1)+8)
+			}
 		}
 		fmt.Println()
 	}
+	fmt.Print("  ")
+	for ch := 'A'; ch <= 'H'; ch++{
+		fmt.Printf("%c ", ch)
+	}
+	fmt.Println()
+
 }
