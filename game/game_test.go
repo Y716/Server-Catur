@@ -35,6 +35,68 @@ func TestMovePiece(t *testing.T) {
 	}
 }
 
+func TestColorTurn(t *testing.T) {
+	// Test MovePiece func
+	tests := map[string]struct {
+		colorFlag bool
+		fromSquare string
+		toSquare   string
+		result     board.Piece
+	}{
+		"BlackMoveinWhiteTurn": {
+			colorFlag: true,
+			fromSquare: "e7",
+			toSquare:   "e6",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+		"WhiteMoveinBlackTurn": {
+			colorFlag: false,
+			fromSquare: "e2",
+			toSquare:   "e3",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+		"WhiteMoveinWhiteTurn": {
+			colorFlag: true,
+			fromSquare: "e2",
+			toSquare:   "e3",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.White,
+			},
+		},
+		"BlackMoveinBlackTurn": {
+			colorFlag: false,
+			fromSquare: "e7",
+			toSquare:   "e6",
+			result: board.Piece{
+				PieceType:  board.Pawn,
+				PieceColor: board.Black,
+			},
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			testBoard := board.NewBoard()
+			MovePiece(&testBoard, test.fromSquare, test.toSquare, test.colorFlag)
+			toFile, toRank := boardRepToCompRep(test.toSquare)
+			gotPiece := testBoard[toRank][toFile]
+			if expeceted := test.result; gotPiece != expeceted {
+				t.Fatalf("returned %+v expeceted %+v", gotPiece, expeceted)
+			}
+		})
+	}
+}
+
+
 func TestMovePawn(t *testing.T) {
 	// Test MovePiece func
 	tests := map[string]struct {
@@ -381,9 +443,17 @@ func TestMoveKing(t *testing.T) {
 		toSquare   string
 		result     board.Piece
 	}{
-		"E4toF4": {
+		"E4toF4BlockedByCheck": {
 			fromSquare: "e4",
 			toSquare:   "f4",
+			result: board.Piece{
+				PieceType:  board.NoPieceType,
+				PieceColor: board.NoPieceColor,
+			},
+		},
+		"E4toF5": {
+			fromSquare: "e4",
+			toSquare:   "f5",
 			result: board.Piece{
 				PieceType:  board.King,
 				PieceColor: board.White,
