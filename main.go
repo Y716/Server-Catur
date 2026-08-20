@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	// "net/http"
 
 	"github.com/Y716/Server-Catur/board"
 	"github.com/Y716/Server-Catur/game"
+	"github.com/Y716/Server-Catur/server"
 )
 
 func main() {
+	go server.ConnectServer()
 	Board := board.NewBoard()
 	colorFlag := true //true equals white, false equals black
 	for {

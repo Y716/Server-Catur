@@ -6,9 +6,6 @@ import(
 )
 
 func isKingInCheck(Board *[8][8]board.Piece, colorFlag bool) bool{
-	// TODO Cari King warna yang sedang jalan ada dimana
-	// TODO Looping board semua warna berlawanan
-	// TODO di setiap looping, jalankan isValidMove(from itu bidak musuh, to itu square king)
 	kingColor := board.NoPieceColor
 	if colorFlag{
 		kingColor = board.White

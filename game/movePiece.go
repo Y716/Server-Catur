@@ -30,7 +30,6 @@ func boardRepToCompRep(square string) (int, int) {
 
 	return file, rank*(-1) + 8
 }
-
 func MovePiece(Board *[8][8]board.Piece, from string, to string, colorFlag bool) bool {
 	fromFile, fromRank := boardRepToCompRep(from)
 	toFile, toRank := boardRepToCompRep(to)
