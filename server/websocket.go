@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/Y716/Server-Catur/board"
 	"github.com/gorilla/websocket"
 )
 
@@ -19,6 +20,7 @@ type Room struct{
 	Player1 *websocket.Conn
 	Player2 *websocket.Conn
 	mu sync.Mutex
+	Board [8][8]board.Piece
 }
 
 type Message struct{
@@ -27,7 +29,9 @@ type Message struct{
 	To string `json:"to"`
 }
 
-var safeRoom = &Room{}
+var safeRoom = &Room{
+	Board: board.NewBoard(),
+}
 
 func broadcast(w http.ResponseWriter, r *http.Request){
 	conn, err := upgrader.Upgrade(w,r, nil)
