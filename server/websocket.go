@@ -36,6 +36,11 @@ type Message struct{
 	To string `json:"to"`
 }
 
+type BoardMessage struct{
+	Type string `json:"type"`
+	Board [8][8]board.Piece `json:"board"`
+}
+
 var safeRoom = &Room{
 	Turn: true,
 	Board: board.NewBoard(),
@@ -67,7 +72,21 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		}
 	}
 	safeRoom.mu.Unlock()
-	
+	boardMessage := BoardMessage{
+		Type: "board",
+		Board: *safeRoom.Board,
+	}
+
+	boardJson, err := json.Marshal(boardMessage)
+	if err != nil{
+		log.Fatalf("Error encoding JSON: %s", err)
+	}
+
+	err = conn.WriteMessage(websocket.TextMessage, boardJson)
+	if err != nil {
+		log.Println(err)
+	}
+
 
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -102,7 +121,6 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 					safeRoom.mu.Lock()
 					Valid := game.MovePiece(safeRoom.Board, msg.From, msg.To, safeRoom.Turn)
 					if Valid {
-						safeRoom.mu.Unlock()
 
 						safeRoom.Turn = !safeRoom.Turn
 						log.Printf("recv: %s", msg)
@@ -114,10 +132,18 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 						// 	log.Println("write:", err)
 						// 	return
 						// }				
-						err = safeRoom.BroadcastMessage(mt, message) 
+						boardMessage.Board = *safeRoom.Board
+						boardJson, err := json.Marshal(boardMessage)
 						if err != nil{
-							log.Println("write:", err)
+							log.Fatalf("Error encoding JSON: %s", err)
 						}
+
+						err = safeRoom.BroadcastMessage(websocket.TextMessage, boardJson)
+						if err != nil {
+							log.Println(err)
+						}
+						safeRoom.mu.Unlock()
+
 					}else{
 						conn.WriteMessage(websocket.TextMessage, []byte("Move invalid!"))
 						safeRoom.mu.Unlock()
