@@ -1,6 +1,9 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type PieceType int
 
@@ -40,7 +43,7 @@ type Piece struct {
 	PieceColor PieceColor
 }
 
-func NewBoard() [8][8]Piece {
+func NewBoard() *[8][8]Piece {
 	Board := [8][8]Piece{
 		{{Rook, Black}, {Knight, Black}, {Bishop, Black}, {Queen, Black}, {King, Black}, {Bishop, Black}, {Knight, Black}, {Rook, Black}},
 		{{Pawn, Black}, {Pawn, Black}, {Pawn, Black}, {Pawn, Black}, {Pawn, Black}, {Pawn, Black}, {Pawn, Black}, {Pawn, Black}},
@@ -51,7 +54,7 @@ func NewBoard() [8][8]Piece {
 		{{Pawn, White}, {Pawn, White}, {Pawn, White}, {Pawn, White}, {Pawn, White}, {Pawn, White}, {Pawn, White}, {Pawn, White}},
 		{{Rook, White}, {Knight, White}, {Bishop, White}, {Queen, White}, {King, White}, {Bishop, White}, {Knight, White}, {Rook, White}},
 	}
-	return Board
+	return &Board
 }
 
 func getUniCodePiece(piece Piece) string {
@@ -73,30 +76,60 @@ func getUniCodePiece(piece Piece) string {
 
 	return pieceMap[piece]
 }
-
-func PrintBoard(Board [8][8]Piece) {
-	fmt.Print("  ")
+func PrintBoard(Board [8][8]Piece) string { 
+	var boardState strings.Builder
+	boardState.WriteString("  ")
 	for ch := 'A'; ch <= 'H'; ch++{
-		fmt.Printf("%c ", ch)
+		fmt.Fprintf(&boardState, "%c ", ch)
 	}
-	fmt.Println()
+	boardState.WriteString("\n")
 	for i := 0; i < len(Board); i++ {
 		for j := 0; j < len(Board); j++ {
 			if j == 0{
-				fmt.Printf("%d ", (i*-1)+8)
+				fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
 			}
 			uniCodePiece := getUniCodePiece(Board[i][j])
-			fmt.Print(uniCodePiece + " ")
+			fmt.Fprintf(&boardState, "%s ", uniCodePiece)
 			if j == 7{
-				fmt.Printf("%d", (i*-1)+8)
+				fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
 			}
 		}
-		fmt.Println()
-	}
-	fmt.Print("  ")
-	for ch := 'A'; ch <= 'H'; ch++{
-		fmt.Printf("%c ", ch)
-	}
-	fmt.Println()
+		
+		fmt.Fprintln(&boardState, "")
 
+	}
+	fmt.Fprint(&boardState, "  ")
+	for ch := 'A'; ch <= 'H'; ch++{
+		fmt.Fprintf(&boardState, "%c ", ch)
+	}
+	fmt.Fprintln(&boardState, "")
+
+	fmt.Printf("%s", &boardState)
+	return boardState.String()
 }
+
+// func PrintBoard(Board [8][8]Piece) string {
+// 	for ch := 'A'; ch <= 'H'; ch++{
+// 		fmt.Printf("%c ", ch)
+// 	}
+// 	fmt.Println()
+// 	for i := 0; i < len(Board); i++ {
+// 		for j := 0; j < len(Board); j++ {
+// 			if j == 0{
+// 				fmt.Printf("%d ", (i*-1)+8)
+// 			}
+// 			uniCodePiece := getUniCodePiece(Board[i][j])
+// 			fmt.Print(uniCodePiece + " ")
+// 			if j == 7{
+// 				fmt.Printf("%d", (i*-1)+8)
+// 			}
+// 		}
+// 		fmt.Println()
+// 	}
+// 	fmt.Print("  ")
+// 	for ch := 'A'; ch <= 'H'; ch++{
+// 		fmt.Printf("%c ", ch)
+// 	}
+// 	fmt.Println()
+//
+// }

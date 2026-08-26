@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 	// "net/http"
@@ -14,16 +13,16 @@ import (
 
 func main() {
 	go server.ConnectServer()
-	Board := board.NewBoard()
+	Board := *board.NewBoard()
 	colorFlag := true //true equals white, false equals black
 	for {
 		board.PrintBoard(Board)
 		scanner := bufio.NewScanner(os.Stdin)
-		if colorFlag == true {
-			fmt.Print("White's move: ")
-		} else {
-			fmt.Print("Black's Move: ")
-		}
+		// if colorFlag == true {
+		// 	fmt.Print("White's move: ")
+		// } else {
+		// 	fmt.Print("Black's Move: ")
+		// }
 
 		if scanner.Scan() {
 
