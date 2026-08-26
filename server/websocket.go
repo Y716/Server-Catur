@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
@@ -18,6 +19,12 @@ type Room struct{
 	Player1 *websocket.Conn
 	Player2 *websocket.Conn
 	mu sync.Mutex
+}
+
+type Message struct{
+	Type string `json:"type"`
+	From string `json:"from"`
+	To string `json:"to"`
 }
 
 var safeRoom = &Room{}
@@ -45,10 +52,18 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 
 	for {
 		mt, message, err := conn.ReadMessage()
+
 		if err != nil{
 			log.Println("read:", err)
 			break
 		}
+		var msg Message
+		err = json.Unmarshal(message, &msg)
+		if err != nil{
+			log.Println("unmarshall:", err)
+		}
+		log.Printf("Message Type: %s, FromSquare: %s, ToSquare: %s", msg.Type, msg.From, msg.To)
+		log.Printf("recv: %s", msg)
 		err = safeRoom.BroadcastMessage(mt, message)
 		if err != nil{
 			log.Println("write:", err)
