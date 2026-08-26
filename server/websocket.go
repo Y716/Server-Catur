@@ -77,12 +77,12 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		Board: *safeRoom.Board,
 	}
 
-	boardJson, err := json.Marshal(boardMessage)
+	boardJSON, err := json.Marshal(boardMessage)
 	if err != nil{
 		log.Fatalf("Error encoding JSON: %s", err)
 	}
 
-	err = conn.WriteMessage(websocket.TextMessage, boardJson)
+	err = conn.WriteMessage(websocket.TextMessage, boardJSON)
 	if err != nil {
 		log.Println(err)
 	}
@@ -133,12 +133,12 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 						// 	return
 						// }				
 						boardMessage.Board = *safeRoom.Board
-						boardJson, err := json.Marshal(boardMessage)
+						boardJSON, err := json.Marshal(boardMessage)
 						if err != nil{
 							log.Fatalf("Error encoding JSON: %s", err)
 						}
 
-						err = safeRoom.BroadcastMessage(websocket.TextMessage, boardJson)
+						err = safeRoom.BroadcastMessage(websocket.TextMessage, boardJSON)
 						if err != nil {
 							log.Println(err)
 						}
