@@ -81,17 +81,19 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		Board: *safeRoom.Board,
 	}
 
-
-	boardJson, err := json.Marshal(boardMessage)
+	boardJSON, err := json.Marshal(boardMessage)
 	if err != nil{
-		log.Fatalf("Error encoding JSON: %s", err)
+		log.Printf("Error encoding JSON: %s", err)
 	}
 
-	err = conn.WriteMessage(websocket.TextMessage, boardJson)
+	err = conn.WriteMessage(websocket.TextMessage, boardJSON)
 	if err != nil {
 		log.Println(err)
 	}
 
+	if (safeRoom.Player1 != nil && safeRoom.Player2 != nil){
+	safeRoom.SendToPlayer()
+	}
 
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -103,6 +105,7 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		err = json.Unmarshal(message, &msg)
 		if err != nil{
 			log.Println("unmarshall:", err)
+			continue
 		}
 		
 		if (safeRoom.Player1.Conn == conn && safeRoom.Turn == safeRoom.Player1.IsWhite || safeRoom.Player2.Conn == conn && safeRoom.Turn == safeRoom.Player2.IsWhite){
@@ -138,16 +141,18 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 						// 	return
 						// }				
 						boardMessage.Board = *safeRoom.Board
-						boardJson, err := json.Marshal(boardMessage)
+						boardJSON, err := json.Marshal(boardMessage)
 						if err != nil{
-							log.Fatalf("Error encoding JSON: %s", err)
+							log.Printf("Error encoding JSON: %s", err)
+							continue
 						}
 
-						err = safeRoom.BroadcastMessage(websocket.TextMessage, boardJson)
+						safeRoom.mu.Unlock()
+						err = safeRoom.BroadcastMessage(websocket.TextMessage, boardJSON)
 						if err != nil {
 							log.Println(err)
 						}
-						safeRoom.mu.Unlock()
+						safeRoom.SendToPlayer()
 
 					}else{
 						conn.WriteMessage(websocket.TextMessage, []byte("Move invalid!"))
@@ -170,6 +175,9 @@ func (room *Room) SendToPlayer() error{
 	room.mu.Lock()
 	defer room.mu.Unlock()
 	for _, player := range players{
+		if player == nil{
+			return nil
+		}
 		if player.IsWhite == room.Turn{
 			msg := TurnMessage{
 				Type: "Turn",
@@ -177,7 +185,8 @@ func (room *Room) SendToPlayer() error{
 			}
 			messageJson, err := json.Marshal(msg)
 			if err != nil{
-				log.Fatalf("Error encoding JSON: %s", err)
+				log.Printf("Error encoding JSON: %s", err)
+				return err
 			}
 			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
 			if err != nil {
@@ -190,7 +199,8 @@ func (room *Room) SendToPlayer() error{
 			}
 			messageJson, err := json.Marshal(msg)
 			if err != nil{
-				log.Fatalf("Error encoding JSON: %s", err)
+				log.Printf("Error encoding JSON: %s", err)
+				return err
 			}
 			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
 			if err != nil {
