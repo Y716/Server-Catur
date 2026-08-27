@@ -30,7 +30,7 @@ type Player struct{
 	IsWhite bool
 }
 
-type Message struct{
+type MoveMessage struct{
 	Type string `json:"type"`
 	From string `json:"from"`
 	To string `json:"to"`
@@ -39,6 +39,10 @@ type Message struct{
 type BoardMessage struct{
 	Type string `json:"type"`
 	Board [8][8]board.Piece `json:"board"`
+}
+type TurnMessage struct{
+	Type string `json:"type"`
+	Message string `json:"message"`
 }
 
 var safeRoom = &Room{
@@ -77,6 +81,7 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		Board: *safeRoom.Board,
 	}
 
+
 	boardJson, err := json.Marshal(boardMessage)
 	if err != nil{
 		log.Fatalf("Error encoding JSON: %s", err)
@@ -94,7 +99,7 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 			log.Println("read:", err)
 			break
 		}
-		var msg Message
+		var msg MoveMessage
 		err = json.Unmarshal(message, &msg)
 		if err != nil{
 			log.Println("unmarshall:", err)
@@ -158,6 +163,43 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 
 	}
 
+}
+
+func (room *Room) SendToPlayer() error{
+	players := []*Player{room.Player1, room.Player2}
+	room.mu.Lock()
+	defer room.mu.Unlock()
+	for _, player := range players{
+		if player.IsWhite == room.Turn{
+			msg := TurnMessage{
+				Type: "Turn",
+				Message: "Your Turn: ",
+			}
+			messageJson, err := json.Marshal(msg)
+			if err != nil{
+				log.Fatalf("Error encoding JSON: %s", err)
+			}
+			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
+			if err != nil {
+				return err
+			}
+		}else{
+			msg := TurnMessage{
+				Type: "Turn",
+				Message: "Waiting Opponent's Turn...",
+			}
+			messageJson, err := json.Marshal(msg)
+			if err != nil{
+				log.Fatalf("Error encoding JSON: %s", err)
+			}
+			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
 }
 
 func (room *Room) BroadcastMessage(mt int, message []byte) error{
