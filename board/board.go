@@ -104,7 +104,6 @@ func PrintBoard(Board [8][8]Piece) string {
 	}
 	fmt.Fprintln(&boardState, "")
 
-	fmt.Printf("%s", &boardState)
 	return boardState.String()
 }
 

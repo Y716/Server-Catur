@@ -12,77 +12,63 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
+
 // type SafeConnections struct{
 // 	connections []*websocket.Conn
 // 	mu sync.Mutex
 // }
 
-type Room struct{
-	Player1 *Player 
-	Player2 *Player 
-	mu sync.Mutex
-	Board *[8][8]board.Piece
-	Turn bool
+type Room struct {
+	Player1 *Player
+	Player2 *Player
+	mu      sync.Mutex
+	Board   *[8][8]board.Piece
+	Turn    bool
 }
 
-type Player struct{
-	Conn *websocket.Conn
+type Player struct {
+	Conn    *websocket.Conn
 	IsWhite bool
 }
 
-type MoveMessage struct{
-	Type string `json:"type"`
-	From string `json:"from"`
-	To string `json:"to"`
-}
-
-type BoardMessage struct{
-	Type string `json:"type"`
-	Board [8][8]board.Piece `json:"board"`
-}
-type TurnMessage struct{
-	Type string `json:"type"`
-	Message string `json:"message"`
-}
-
 var safeRoom = &Room{
-	Turn: true,
+	Turn:  true,
 	Board: board.NewBoard(),
 }
 
-func broadcast(w http.ResponseWriter, r *http.Request){
-	conn, err := upgrader.Upgrade(w,r, nil)
-	if err != nil{
+func broadcast(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
 		log.Print("Upgrade:", err)
 		return
 	}
 	defer conn.Close()
 	safeRoom.mu.Lock()
-	if safeRoom.Player1 != nil && safeRoom.Player2 != nil{
-		conn.WriteMessage(websocket.TextMessage, []byte( "Room is full. Please come again later!" ))	
+	if safeRoom.Player1 != nil && safeRoom.Player2 != nil {
+		conn.WriteMessage(websocket.TextMessage, []byte("Room is full. Please come again later!"))
 		safeRoom.mu.Unlock()
 		return
-	}else{
-		if safeRoom.Player1 == nil{
+	} else {
+		if safeRoom.Player1 == nil {
 			safeRoom.Player1 = &Player{
-				Conn: conn,
+				Conn:    conn,
 				IsWhite: true,
 			}
-		}else{
+		} else {
 			safeRoom.Player2 = &Player{
-				Conn: conn,
+				Conn:    conn,
 				IsWhite: false,
 			}
 		}
 	}
 	safeRoom.mu.Unlock()
 	boardMessage := BoardMessage{
-		Type: "board",
+		Type:  "Board",
 		Board: *safeRoom.Board,
 	}
 
 	boardJSON, err := json.Marshal(boardMessage)
-	if err != nil{
+	if err != nil {
 		log.Printf("Error encoding JSON: %s", err)
 	}
 
@@ -91,41 +77,38 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 		log.Println(err)
 	}
 
-	if (safeRoom.Player1 != nil && safeRoom.Player2 != nil){
-	safeRoom.SendToPlayer()
+	if safeRoom.Player1 != nil && safeRoom.Player2 != nil {
+		safeRoom.SendToPlayer()
 	}
 
 	for {
 		mt, message, err := conn.ReadMessage()
-		if err != nil{
+		if err != nil {
 			log.Println("read:", err)
 			break
 		}
 		var msg MoveMessage
 		err = json.Unmarshal(message, &msg)
-		if err != nil{
+		if err != nil {
 			log.Println("unmarshall:", err)
 			continue
 		}
-		
-		if (safeRoom.Player1.Conn == conn && safeRoom.Turn == safeRoom.Player1.IsWhite || safeRoom.Player2.Conn == conn && safeRoom.Turn == safeRoom.Player2.IsWhite){
-			if (safeRoom.Player1== nil || safeRoom.Player2 == nil){
-				if safeRoom.Player1 != nil{
-					err := safeRoom.Player1.Conn.WriteMessage(mt, []byte("Need one more player!"))
-					if err != nil {
-						log.Println("write:", err)
-						continue
-					}
-				}else if safeRoom.Player2 != nil{
-					err := safeRoom.Player2.Conn.WriteMessage(mt, []byte("Need one more player!"))
-					if err != nil {
-						log.Println("write:", err)
-						continue
 
+		if safeRoom.Player1.Conn == conn && safeRoom.Turn == safeRoom.Player1.IsWhite || safeRoom.Player2.Conn == conn && safeRoom.Turn == safeRoom.Player2.IsWhite {
+			if safeRoom.Player1 == nil || safeRoom.Player2 == nil {
+				if safeRoom.Player1 != nil {
+					err := SendWarningMessage(safeRoom.Player1.Conn, "Need one more player!", mt)
+					if err != nil {
+						log.Printf("Error Sending Warn Message: %v", err)
+					}
+				} else if safeRoom.Player2 != nil {
+					err := SendWarningMessage(safeRoom.Player2.Conn, "Need one more player!", mt)
+					if err != nil {
+						log.Printf("Error Sending Warn Message: %v", err)
 					}
 				}
-			}else{
-				if msg.Type == "move" {
+			} else {
+				if msg.Type == "Move" {
 					safeRoom.mu.Lock()
 					Valid := game.MovePiece(safeRoom.Board, msg.From, msg.To, safeRoom.Turn)
 					if Valid {
@@ -135,14 +118,14 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 						boardState := board.PrintBoard(*safeRoom.Board)
 						log.Printf("%s", boardState)
 
-						// err = safeRoom.BroadcastMessage(mt, []byte(boardState)) 
+						// err = safeRoom.BroadcastMessage(mt, []byte(boardState))
 						// if err != nil{
 						// 	log.Println("write:", err)
 						// 	return
-						// }				
+						// }
 						boardMessage.Board = *safeRoom.Board
 						boardJSON, err := json.Marshal(boardMessage)
-						if err != nil{
+						if err != nil {
 							log.Printf("Error encoding JSON: %s", err)
 							continue
 						}
@@ -154,54 +137,67 @@ func broadcast(w http.ResponseWriter, r *http.Request){
 						}
 						safeRoom.SendToPlayer()
 
-					}else{
-						conn.WriteMessage(websocket.TextMessage, []byte("Move invalid!"))
+					} else {
+						err := SendWarningMessage(conn, "Move Invalid!\n", mt)
+						if err != nil {
+							log.Printf("Error Sending Warn Message: %v", err)
+						}
+						err = SendWarningMessage(conn, "Your Turn: ", mt)
+						if err != nil {
+							log.Printf("Error Sending Warn Message: %v", err)
+						}
 						safeRoom.mu.Unlock()
 					}
 				}
 
+			}
+		} else {
+			err := SendWarningMessage(conn, "Not your turn!", mt)
+			if err != nil {
+				log.Printf("Error Sending Warn Message: %v", err)
+			}
 		}
-		}else {
-			conn.WriteMessage(websocket.TextMessage, []byte("Not your turn!"))	
-		}
-
 
 	}
 
 }
 
-func (room *Room) SendToPlayer() error{
+func (room *Room) SendToPlayer() error {
 	players := []*Player{room.Player1, room.Player2}
 	room.mu.Lock()
 	defer room.mu.Unlock()
-	for _, player := range players{
-		if player == nil{
+	for _, player := range players {
+		if player == nil {
 			return nil
 		}
-		if player.IsWhite == room.Turn{
+		if player.IsWhite == room.Turn {
 			msg := TurnMessage{
-				Type: "Turn",
+				Type:    "Turn",
 				Message: "Your Turn: ",
 			}
+
 			messageJson, err := json.Marshal(msg)
-			if err != nil{
+			if err != nil {
 				log.Printf("Error encoding JSON: %s", err)
 				return err
 			}
+
 			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
 			if err != nil {
 				return err
 			}
-		}else{
+		} else {
 			msg := TurnMessage{
-				Type: "Turn",
+				Type:    "Turn",
 				Message: "Waiting Opponent's Turn...",
 			}
+
 			messageJson, err := json.Marshal(msg)
-			if err != nil{
+			if err != nil {
 				log.Printf("Error encoding JSON: %s", err)
 				return err
 			}
+
 			err = player.Conn.WriteMessage(websocket.TextMessage, messageJson)
 			if err != nil {
 				return err
@@ -212,7 +208,7 @@ func (room *Room) SendToPlayer() error{
 	return nil
 }
 
-func (room *Room) BroadcastMessage(mt int, message []byte) error{
+func (room *Room) BroadcastMessage(mt int, message []byte) error {
 	room.mu.Lock()
 	defer room.mu.Unlock()
 	err := room.Player1.Conn.WriteMessage(mt, message)
@@ -228,3 +224,20 @@ func (room *Room) BroadcastMessage(mt int, message []byte) error{
 	return nil
 }
 
+func SendWarningMessage(conn *websocket.Conn, msg string, mt int) error{
+	msgStruct := WarningMessage{
+		Type:    "Warning",
+		Message: msg,
+	}
+
+	messageJson, err := json.Marshal(msgStruct)
+	if err != nil {
+		return err
+	}
+
+	err = conn.WriteMessage(mt, messageJson)
+	if err != nil {
+		return err
+	}
+	return nil
+}

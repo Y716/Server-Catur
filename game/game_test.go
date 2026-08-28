@@ -12,7 +12,7 @@ func TestMovePiece(t *testing.T) {
 	fromSquare := "e2"
 	toSquare := "e4"
 
-	MovePiece(&testBoard, fromSquare, toSquare, true)
+	MovePiece(testBoard, fromSquare, toSquare, true)
 
 	fromFile, fromRank := boardRepToCompRep(fromSquare)
 	toFile, toRank := boardRepToCompRep(toSquare)
@@ -86,7 +86,7 @@ func TestColorTurn(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			testBoard := board.NewBoard()
-			MovePiece(&testBoard, test.fromSquare, test.toSquare, test.colorFlag)
+			MovePiece(testBoard, test.fromSquare, test.toSquare, test.colorFlag)
 			toFile, toRank := boardRepToCompRep(test.toSquare)
 			gotPiece := testBoard[toRank][toFile]
 			if expeceted := test.result; gotPiece != expeceted {
@@ -143,7 +143,7 @@ func TestMovePawn(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			testBoard := board.NewBoard()
-			MovePiece(&testBoard, test.fromSquare, test.toSquare, true)
+			MovePiece(testBoard, test.fromSquare, test.toSquare, true)
 			toFile, toRank := boardRepToCompRep(test.toSquare)
 			gotPiece := testBoard[toRank][toFile]
 			if expeceted := test.result; gotPiece != expeceted {
