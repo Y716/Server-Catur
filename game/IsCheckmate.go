@@ -10,26 +10,26 @@ func IsCheckmate(Board *[8][8]board.Piece, colorFlag bool) bool{
 	} else{
 		kingColor = board.Black
 	}
-	kingFile := 0
-	kingRank := 0
-	for i := 0; i < len(Board); i++ {
-		for j := 0; j < len(Board); j++ {
-			if Board[i][j].PieceType == board.King && Board[i][j].PieceColor == kingColor{
-				kingRank = i
-				kingFile = j
-			}  
-		}
-	}
 
 	for i := 0; i < len(Board); i++ {
 		for j := 0; j < len(Board); j++ {
-			if Board[i][j].PieceColor != kingColor && Board[i][j].PieceColor != board.NoPieceColor{
-				if isValidMove(Board, j, kingFile, i, kingRank){
-					return true
+			if Board[i][j].PieceColor == kingColor{
+
+				for k := 0; k < len(Board); k++ {
+					for l := 0; l < len(Board); l++ {
+						//TODO
+						fromFile := 
+						if !isValidMove(Board, fromFile, toFile, fromRank, toRank) {
+							return false
+						}
+						simulationBoard := 
+						IsKingInCheckAfterMove()
+					}
 				}
 			}  
 		}
 	}
+
 
 	return false
 }
