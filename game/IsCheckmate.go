@@ -1,11 +1,9 @@
 package game
 
-import(
-	"github.com/Y716/Server-Catur/board"
+import "github.com/Y716/Server-Catur/board"
 
-)
 
-func isKingInCheck(Board *[8][8]board.Piece, colorFlag bool) bool{
+func IsCheckmate(Board *[8][8]board.Piece, colorFlag bool) bool{
 	kingColor := board.NoPieceColor
 	if colorFlag{
 		kingColor = board.White
@@ -36,15 +34,3 @@ func isKingInCheck(Board *[8][8]board.Piece, colorFlag bool) bool{
 	return false
 }
 
-func IsKingInCheckAfterMove(Board [8][8]board.Piece, fromRank int, fromFile int, toRank int, toFile int, colorFlag bool) bool{
-	simulationBoard := Board
-
-	movedPiece := simulationBoard[fromRank][fromFile]
-	simulationBoard[fromRank][fromFile] = board.Piece{
-		PieceType:  board.NoPieceType,
-		PieceColor: board.NoPieceColor,
-	}
-	simulationBoard[toRank][toFile] = movedPiece
-
-	return isKingInCheck(&simulationBoard, colorFlag)
-}

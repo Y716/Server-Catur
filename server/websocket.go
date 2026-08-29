@@ -142,7 +142,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 						if err != nil {
 							log.Printf("Error Sending Warn Message: %v", err)
 						}
-						err = SendWarningMessage(conn, "Your Turn: ", mt)
+
 						if err != nil {
 							log.Printf("Error Sending Warn Message: %v", err)
 						}

@@ -44,19 +44,14 @@ func MovePiece(Board *[8][8]board.Piece, from string, to string, colorFlag bool)
 		fmt.Println("Invalid Move")
 		return false
 	}
+
 	simulationBoard := *Board
 
-	movedPiece := simulationBoard[fromRank][fromFile]
-	simulationBoard[fromRank][fromFile] = board.Piece{
-		PieceType:  board.NoPieceType,
-		PieceColor: board.NoPieceColor,
-	}
-	simulationBoard[toRank][toFile] = movedPiece
-
-	if isKingInCheck(&simulationBoard, colorFlag) {
+	if IsKingInCheckAfterMove(simulationBoard, fromRank, fromFile, toRank, toFile, colorFlag){
 		fmt.Println("King is in Check!")
 		return false
 	}
+	movedPiece := simulationBoard[fromRank][fromFile]
 
 	Board[fromRank][fromFile] = board.Piece{
 		PieceType:  board.NoPieceType,

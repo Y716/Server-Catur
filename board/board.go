@@ -27,16 +27,16 @@ const (
 
 type File int
 
-const (
-	a File = iota
-	b
-	c
-	d
-	e
-	f
-	g
-	h
-)
+// const (
+// 	a File = iota
+// 	b
+// 	c
+// 	d
+// 	e
+// 	f
+// 	g
+// 	h
+// )
 
 type Piece struct {
 	PieceType  PieceType
