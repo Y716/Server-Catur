@@ -6,6 +6,93 @@ import (
 	"github.com/Y716/Server-Catur/board"
 )
 
+func isKingInCheck(Board *[8][8]board.Piece, colorFlag bool) bool{
+	kingColor := board.NoPieceColor
+	if colorFlag{
+		kingColor = board.White
+	} else{
+		kingColor = board.Black
+	}
+	kingFile := 0
+	kingRank := 0
+	for i := 0; i < len(Board); i++ {
+		for j := 0; j < len(Board); j++ {
+			if Board[i][j].PieceType == board.King && Board[i][j].PieceColor == kingColor{
+				kingRank = i
+				kingFile = j
+			}  
+		}
+	}
+
+	for i := 0; i < len(Board); i++ {
+		for j := 0; j < len(Board); j++ {
+			if Board[i][j].PieceColor != kingColor && Board[i][j].PieceColor != board.NoPieceColor{
+				if isValidMove(Board, j, kingFile, i, kingRank){
+					return true
+				}
+			}  
+		}
+	}
+
+	return false
+}
+
+func IsKingInCheckAfterMove(Board [8][8]board.Piece, fromRank int, fromFile int, toRank int, toFile int, colorFlag bool) bool{
+	simulationBoard := Board
+
+	movedPiece := simulationBoard[fromRank][fromFile]
+	simulationBoard[fromRank][fromFile] = board.Piece{
+		PieceType:  board.NoPieceType,
+		PieceColor: board.NoPieceColor,
+	}
+	simulationBoard[toRank][toFile] = movedPiece
+
+	return isKingInCheck(&simulationBoard, colorFlag)
+}
+
+func IsCheckmate(Board [8][8]board.Piece, colorFlag bool) bool{
+	if !HasLegalMoves(&Board, colorFlag)&& isKingInCheck(&Board, colorFlag){
+			return true
+	}
+	return false
+
+}
+func HasLegalMoves(Board *[8][8]board.Piece, colorFlag bool) bool{
+	kingColor := board.NoPieceColor
+	if colorFlag{
+		kingColor = board.White
+	} else{
+		kingColor = board.Black
+	}
+
+	for i := 0; i < len(Board); i++ {
+		for j := 0; j < len(Board); j++ {
+			if Board[i][j].PieceColor == kingColor{
+
+				for k := 0; k < len(Board); k++ {
+
+					for l := 0; l < len(Board); l++ {
+
+						fromRank := i 
+						fromFile := j 
+						toRank := k 
+						toFile := l 
+						simulationBoard := *Board
+						if isValidMove(&simulationBoard, fromFile, toFile, fromRank, toRank) && !IsKingInCheckAfterMove(simulationBoard, fromRank, fromFile, toRank, toFile, colorFlag){
+							return true
+						}
+
+					}
+				}
+			}  
+		}
+	}
+
+
+	return false
+}
+
+
 func isValidMove(Board *[8][8]board.Piece, fromFile, toFile, fromRank, toRank int) bool {
 	pieceType := Board[fromRank][fromFile].PieceType
 	pieceColor := Board[fromRank][fromFile].PieceColor
