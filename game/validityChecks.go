@@ -57,6 +57,15 @@ func IsCheckmate(Board [8][8]board.Piece, colorFlag bool) bool{
 	return false
 
 }
+
+func IsStalemate(Board [8][8]board.Piece, colorFlag bool) bool{
+	if !HasLegalMoves(&Board, colorFlag)&& !isKingInCheck(&Board, colorFlag){
+			return true
+	}
+	return false
+
+}
+
 func HasLegalMoves(Board *[8][8]board.Piece, colorFlag bool) bool{
 	kingColor := board.NoPieceColor
 	if colorFlag{
