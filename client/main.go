@@ -73,24 +73,46 @@ func main(){
 
 		for scanner.Scan() {
 			text := scanner.Text()
-			textSlice := strings.Split(text, " ")
-			if len( textSlice ) != 2{
-				fmt.Println("Hanya menerima format [square1] [square2]")
-				fmt.Println("ex: e2 e3")
-			}else{ 
-				moveStruct := server.MoveMessage{
-					Type: "Move",
-					From: textSlice[0],
-					To: textSlice[1],
+			if text == "Resign"{
 
+				moveStruct := server.Message{
+					Type: "Resign",
 				}
-				
+
 				moveJson, err := json.Marshal(moveStruct) 
 				if err != nil {
 					log.Printf("Error Marshal message: %v", err)
 					continue	
 				}
-				conn.WriteMessage(websocket.TextMessage, moveJson)
+
+				
+				err = conn.WriteMessage(websocket.TextMessage, moveJson)
+				if err != nil {
+					log.Printf("Error write message: %v", err)
+					continue
+				}
+
+
+			} else { 
+				textSlice := strings.Split(text, " ")
+				if len( textSlice ) != 2{
+					fmt.Println("Hanya menerima format [square1] [square2]")
+					fmt.Println("ex: e2 e3")
+				}else{ 
+					moveStruct := server.MoveMessage{
+						Type: "Move",
+						From: textSlice[0],
+						To: textSlice[1],
+
+					}
+
+					moveJson, err := json.Marshal(moveStruct) 
+					if err != nil {
+						log.Printf("Error Marshal message: %v", err)
+						continue	
+					}
+					conn.WriteMessage(websocket.TextMessage, moveJson)
+				} 
 			}
 
 			if err := scanner.Err(); err != nil{

@@ -56,11 +56,13 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 				Conn:    conn,
 				IsWhite: true,
 			}
+			log.Printf("[ROOM] Player1 connected (White)")
 		} else {
 			safeRoom.Player2 = &Player{
 				Conn:    conn,
 				IsWhite: false,
 			}
+			log.Printf("[ROOM] Player2 connected (Black)")
 		}
 	}
 	safeRoom.mu.Unlock()
@@ -104,6 +106,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
+					log.Printf("[ROOM] Player1 disconnected — Player2 wins by forfeit")
 				}
 			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
 				if safeRoom.Player1 != nil{
@@ -123,6 +126,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
+					log.Printf("[ROOM] Player2 disconnected — Player1 wins by forfeit")
 				}
 			}
 			safeRoom.mu.Lock()
@@ -138,6 +142,54 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		if msg.Type == "Resign"{
+			if safeRoom.Player1 != nil && conn == safeRoom.Player1.Conn {
+				if safeRoom.Player2 != nil{
+
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "Your opponent has resign. You win by forfeit",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						break
+					}
+
+					err = safeRoom.Player2.Conn.WriteMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						break
+					}
+					log.Printf("[ROOM] Player1 resigned — Player2 wins")
+				}
+			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
+				if safeRoom.Player1 != nil{
+
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "Your opponent has resign. You win by forfeit",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						break
+					}
+
+					err = safeRoom.Player1.Conn.WriteMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						break
+					}
+					log.Printf("[ROOM] Player2 resigned — Player1 wins")
+				}
+			}
+			safeRoom.mu.Lock()
+			safeRoom.GameOver = true
+			safeRoom.mu.Unlock()
+
+			break
+		}
 		if safeRoom.Player1.Conn == conn && safeRoom.Turn == safeRoom.Player1.IsWhite || safeRoom.Player2.Conn == conn && safeRoom.Turn == safeRoom.Player2.IsWhite {
 			if safeRoom.Player1 == nil || safeRoom.Player2 == nil {
 				if safeRoom.Player1 != nil {
@@ -178,8 +230,6 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 
 						safeRoom.Turn = !safeRoom.Turn
 						log.Printf("recv: %s", msg)
-						boardState := board.PrintBoard(*safeRoom.Board)
-						log.Printf("%s", boardState)
 
 						boardMessage.Board = *safeRoom.Board
 						boardJSON, err := json.Marshal(boardMessage)
@@ -220,6 +270,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 								log.Println(err)
 							}
 							safeRoom.GameOver = true
+							log.Printf("[ROOM] Game over: %s", winMessage)
 
 						}else if game.IsStalemate(*safeRoom.Board, safeRoom.Turn){
 
@@ -240,9 +291,9 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 								log.Println(err)
 							}
 							safeRoom.GameOver = true
-
+							log.Printf("[ROOM] Game over: %s", msg.Message)
 						}
-					} else {
+					}else {
 						err := SendWarningMessage(conn, "Move Invalid!\n", mt)
 						if err != nil {
 							log.Printf("Error Sending Warn Message: %v", err)
