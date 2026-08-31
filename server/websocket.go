@@ -24,6 +24,7 @@ type Room struct {
 	mu      sync.Mutex
 	Board   *[8][8]board.Piece
 	Turn    bool
+	GameOver bool
 }
 
 type Player struct {
@@ -34,6 +35,7 @@ type Player struct {
 var safeRoom = &Room{
 	Turn:  true,
 	Board: board.NewBoard(),
+	GameOver: false,
 }
 
 func broadcast(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +110,26 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			} else {
-				if msg.Type == "Move" {
+
+				if safeRoom.GameOver{
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "Game Over!",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						continue
+					}
+
+
+					err = safeRoom.BroadcastMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						log.Println(err)
+					}
+					continue
+				}else if msg.Type == "Move" {
 					safeRoom.mu.Lock()
 					Valid := game.MovePiece(safeRoom.Board, msg.From, msg.To, safeRoom.Turn)
 					if Valid {
@@ -118,11 +139,6 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 						boardState := board.PrintBoard(*safeRoom.Board)
 						log.Printf("%s", boardState)
 
-						// err = safeRoom.BroadcastMessage(mt, []byte(boardState))
-						// if err != nil{
-						// 	log.Println("write:", err)
-						// 	return
-						// }
 						boardMessage.Board = *safeRoom.Board
 						boardJSON, err := json.Marshal(boardMessage)
 						if err != nil {
@@ -137,15 +153,59 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 						}
 						safeRoom.SendToPlayer()
 
+						if game.IsCheckmate(*safeRoom.Board, safeRoom.Turn){
+							winMessage := ""
+							if safeRoom.Turn{
+								winMessage = "Black wins!"
+							}else{
+								winMessage = "White wins!"
+
+							}
+							msg := TurnMessage{
+								Type:    "Turn",
+								Message: winMessage,
+							}
+
+							messageJson, err := json.Marshal(msg)
+							if err != nil {
+								log.Printf("Error encoding JSON: %s", err)
+								continue
+							}
+
+
+							err = safeRoom.BroadcastMessage(websocket.TextMessage, messageJson)
+							if err != nil {
+								log.Println(err)
+							}
+							safeRoom.GameOver = true
+
+						}else if game.IsStalemate(*safeRoom.Board, safeRoom.Turn){
+
+							msg := TurnMessage{
+								Type:    "Turn",
+								Message: "Draw!",
+							}
+
+							messageJson, err := json.Marshal(msg)
+							if err != nil {
+								log.Printf("Error encoding JSON: %s", err)
+								continue
+							}
+
+
+							err = safeRoom.BroadcastMessage(websocket.TextMessage, messageJson)
+							if err != nil {
+								log.Println(err)
+							}
+							safeRoom.GameOver = true
+
+						}
 					} else {
 						err := SendWarningMessage(conn, "Move Invalid!\n", mt)
 						if err != nil {
 							log.Printf("Error Sending Warn Message: %v", err)
 						}
 
-						if err != nil {
-							log.Printf("Error Sending Warn Message: %v", err)
-						}
 						safeRoom.mu.Unlock()
 					}
 				}
