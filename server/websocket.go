@@ -86,7 +86,49 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			if safeRoom.Player1 != nil && conn == safeRoom.Player1.Conn {
+				if safeRoom.Player2 != nil{
+
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "You win by forfeit",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						break
+					}
+
+					err = safeRoom.Player2.Conn.WriteMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						break
+					}
+				}
+			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
+				if safeRoom.Player1 != nil{
+
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "You win by forfeit",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						break
+					}
+
+					err = safeRoom.Player1.Conn.WriteMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						break
+					}
+				}
+			}
+			safeRoom.mu.Lock()
+			safeRoom.GameOver = true
+			safeRoom.mu.Unlock()
+
 			break
 		}
 		var msg MoveMessage
