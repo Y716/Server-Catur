@@ -539,3 +539,60 @@ func TestKingInCheck(t *testing.T){
 		})
 	}
 }
+
+func TestCheckmateAndStaleMate(t *testing.T){
+	// Test MovePiece func
+	tests := map[string]struct {
+		setupBoard func() [8][8]board.Piece
+		colorFlag  bool
+		result     bool
+	}{
+		"Checkmate": {
+			setupBoard: func() [8][8]board.Piece {
+
+				testBoard := [8][8]board.Piece{}
+				testBoard[0][7] = board.Piece{PieceType: board.King, PieceColor: board.Black} //King Hitam di H8
+				testBoard[1][7] = board.Piece{PieceType: board.Queen, PieceColor: board.White} //Queen Putih di H7
+				testBoard[2][7] = board.Piece{PieceType: board.King, PieceColor: board.White} //King Putih di H6
+				return testBoard
+			},
+			colorFlag: false,
+			result: true,
+		},
+		"Stalemate": {
+			setupBoard: func() [8][8]board.Piece {
+
+				testBoard := [8][8]board.Piece{}
+				testBoard[0][7] = board.Piece{PieceType: board.King, PieceColor: board.Black} //King Hitam di H8
+				testBoard[2][6] = board.Piece{PieceType: board.Queen, PieceColor: board.White} //Queen Putih di G6
+				testBoard[2][7] = board.Piece{PieceType: board.King, PieceColor: board.White} //King Putih di H6
+				return testBoard
+			},
+			colorFlag: false,
+			result: false,
+		},
+		"AvoidCheck": {
+			setupBoard: func() [8][8]board.Piece {
+
+				testBoard := [8][8]board.Piece{}
+				testBoard[0][7] = board.Piece{PieceType: board.King, PieceColor: board.Black} //King Hitam di H8
+				testBoard[1][6] = board.Piece{PieceType: board.Queen, PieceColor: board.White} //Queen Putih di G7
+				testBoard[1][4] = board.Piece{PieceType: board.King, PieceColor: board.White} //King Putih di E7
+				return testBoard
+			},
+			colorFlag: false,
+			result: false,
+		},
+	}
+
+	// fromFile, fromRank := boardRepToCompRep(fromSquare)
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if expeceted := test.result; IsCheckmate(test.setupBoard(), test.colorFlag) != expeceted {
+				t.Fatalf("Test not successful")
+			}
+		})
+	}
+}
