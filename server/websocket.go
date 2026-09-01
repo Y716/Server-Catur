@@ -32,10 +32,9 @@ type Player struct {
 	IsWhite bool
 }
 
-var safeRoom = &Room{
-	Turn:  true,
-	Board: board.NewBoard(),
-	GameOver: false,
+
+var gameRoomsMu sync.Mutex
+var gameRooms = map[int]*Room{
 }
 
 func broadcast(w http.ResponseWriter, r *http.Request) {
@@ -45,27 +44,44 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	safeRoom.mu.Lock()
-	if safeRoom.Player1 != nil && safeRoom.Player2 != nil {
-		conn.WriteMessage(websocket.TextMessage, []byte("Room is full. Please come again later!"))
-		safeRoom.mu.Unlock()
-		return
-	} else {
-		if safeRoom.Player1 == nil {
-			safeRoom.Player1 = &Player{
-				Conn:    conn,
-				IsWhite: true,
-			}
-			log.Printf("[ROOM] Player1 connected (White)")
-		} else {
-			safeRoom.Player2 = &Player{
+
+	var safeRoom *Room
+	var gameID int
+
+	gameRoomsMu.Lock()
+	for id, room := range gameRooms{
+		if room.Player2 == nil{
+
+			room.Player2 = &Player{
 				Conn:    conn,
 				IsWhite: false,
 			}
-			log.Printf("[ROOM] Player2 connected (Black)")
+			gameID = id
+
+			log.Printf("[ROOM%d] Player2 connected (Black)", gameID )
+			safeRoom = room
+			break
+
 		}
 	}
-	safeRoom.mu.Unlock()
+
+	if safeRoom == nil{
+		gameID = len(gameRooms)
+		gameRooms[gameID] = &Room{
+			Turn:  true,
+			Board: board.NewBoard(),
+			GameOver: false,
+			Player1: &Player{
+				Conn: conn,
+				IsWhite: true,
+			},
+		}
+		safeRoom = gameRooms[gameID]
+
+		log.Printf("[ROOM%d] Player1 connected (White)", gameID )
+	}
+	gameRoomsMu.Unlock()
+
 	boardMessage := BoardMessage{
 		Type:  "Board",
 		Board: *safeRoom.Board,
@@ -106,7 +122,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
-					log.Printf("[ROOM] Player1 disconnected — Player2 wins by forfeit")
+					log.Printf("[ROOM%d] Player1 disconnected — Player2 wins by forfeit", gameID)
 				}
 			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
 				if safeRoom.Player1 != nil{
@@ -126,7 +142,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
-					log.Printf("[ROOM] Player2 disconnected — Player1 wins by forfeit")
+					log.Printf("[ROOM%d] Player2 disconnected — Player1 wins by forfeit", gameID)
 				}
 			}
 			safeRoom.mu.Lock()
@@ -161,7 +177,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
-					log.Printf("[ROOM] Player1 resigned — Player2 wins")
+					log.Printf("[ROOM%d] Player1 resigned — Player2 wins", gameID)
 				}
 			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
 				if safeRoom.Player1 != nil{
@@ -181,7 +197,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if err != nil {
 						break
 					}
-					log.Printf("[ROOM] Player2 resigned — Player1 wins")
+					log.Printf("[ROOM%d] Player2 resigned — Player1 wins", gameID)
 				}
 			}
 			safeRoom.mu.Lock()
@@ -229,7 +245,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 					if Valid {
 
 						safeRoom.Turn = !safeRoom.Turn
-						log.Printf("recv: %s", msg)
+						log.Printf("[ROOM%d] recv: %s", gameID, msg)
 
 						boardMessage.Board = *safeRoom.Board
 						boardJSON, err := json.Marshal(boardMessage)
@@ -270,7 +286,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 								log.Println(err)
 							}
 							safeRoom.GameOver = true
-							log.Printf("[ROOM] Game over: %s", winMessage)
+							log.Printf("[ROOM%d] Game over: %s", gameID, msg.Message )
 
 						}else if game.IsStalemate(*safeRoom.Board, safeRoom.Turn){
 
@@ -291,7 +307,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 								log.Println(err)
 							}
 							safeRoom.GameOver = true
-							log.Printf("[ROOM] Game over: %s", msg.Message)
+							log.Printf("[ROOM%d] Game over: %s", gameID, msg.Message )
 						}
 					}else {
 						err := SendWarningMessage(conn, "Move Invalid!\n", mt)
