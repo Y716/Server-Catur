@@ -14,8 +14,7 @@
 	<body>
 
 		<div>
-			<input id="serverUrl" type="text" value="ws://localhost:8080/broadcast" size="40">
-			<button id="connectBtn">Connect</button>
+			<button id="connectBtn">Play</button>
 		</div>
 
 		<div id="color"></div>
@@ -39,7 +38,12 @@
 
 		// === 1. Connect button clicked ===
 		document.getElementById('connectBtn').addEventListener('click', () => {
-			const url = document.getElementById('serverUrl').value;
+			let url = ""
+			if ( window.location.protocol === 'http:' ){
+				url = `ws://${window.location.host}/broadcast`
+			} else if ( window.location.protocol === 'https:'){
+				url = `wss://${window.location.host}/broadcast`
+			}
 			ws = new WebSocket(url); // setara websocket.DefaultDialer.Dial(...)
 
 			ws.onopen = () => {
