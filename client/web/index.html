@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Chess Client</title>
+		<style>
+		body { background: #1e1e1e; color: #d4d4d4; font-family: monospace; padding: 20px; }
+		#board { white-space: pre; font-size: 16px; line-height: 1.3; margin: 15px 0; }
+		input, button { font-family: monospace; font-size: 14px; padding: 5px; }
+		#status { color: #4ec9b0; margin: 10px 0; }
+		#log { color: #f48771; }
+		</style>
+	</head>
+	<body>
+
+		<div>
+			<input id="serverUrl" type="text" value="ws://localhost:8080/broadcast" size="40">
+			<button id="connectBtn">Connect</button>
+		</div>
+
+		<div id="status">Not connected</div>
+		<pre id="board"></pre>
+
+		<div>
+			<input id="moveInput" type="text" placeholder="e2 e4 (or 'resign')" disabled>
+		</div>
+		<div id="log"></div>
+
+		<script>
+		let ws = null; // ini setara dengan variabel `conn` di client/main.go-mu
+
+		const boardEl = document.getElementById('board');
+		const statusEl = document.getElementById('status');
+		const moveInputEl = document.getElementById('moveInput');
+		const logEl = document.getElementById('log');
+
+		// === 1. Connect button clicked ===
+		document.getElementById('connectBtn').addEventListener('click', () => {
+			const url = document.getElementById('serverUrl').value;
+			ws = new WebSocket(url); // setara websocket.DefaultDialer.Dial(...)
+
+			ws.onopen = () => {
+				statusEl.textContent = 'Connected. Waiting for opponent...';
+				logEl.textContent = '';
+				moveInputEl.disabled = false;
+			};
+
+			// === 2. Message received from server (setara goroutine pendengarmu) ===
+			ws.onmessage = (event) => {
+				const msg = JSON.parse(event.data); // setara json.Unmarshal
+
+				if (msg.type === 'Board') {
+					boardEl.textContent = renderBoard(msg.board);
+				} else if (msg.type === 'Turn') {
+					statusEl.textContent = msg.message;
+				} else {
+					logEl.textContent = JSON.stringify(msg);
+				}
+			};
+
+			ws.onclose = () => {
+				statusEl.textContent = 'Disconnected';
+				moveInputEl.disabled = true;
+			};
+
+			ws.onerror = (err) => {
+				logEl.textContent = 'Connection error';
+			};
+		});
+
+		// === 3. Enter pressed in move input ===
+		moveInputEl.addEventListener('keydown', (event) => {
+			if (event.key !== 'Enter') return;
+
+			const text = moveInputEl.value.trim();
+			let payload;
+
+			if (text.toLowerCase() === 'resign') {
+				payload = { type: 'Resign' };
+			} else {
+				const parts = text.split(' ');
+				if (parts.length !== 2) {
+					logEl.textContent = 'Format: [from] [to], e.g. e2 e4';
+					return;
+				}
+				payload = { type: 'Move', from: parts[0], to: parts[1] };
+			}
+
+			ws.send(JSON.stringify(payload)); // setara conn.WriteMessage(...)
+			moveInputEl.value = '';
+		});
+
+		// Terjemahkan board JSON (array PieceType/PieceColor) jadi teks Unicode,
+		// mirip board.PrintBoard() di Go-mu
+		const UNICODE = {
+			'0-0': '□',
+			'1-1': '♟', '2-1': '♝', '3-1': '♞', '4-1': '♜', '5-1': '♛', '6-1': '♚',
+			'1-2': '♙', '2-2': '♗', '3-2': '♘', '4-2': '♖', '5-2': '♕', '6-2': '♔',
+		};
+
+		function renderBoard(board) {
+			let out = '  A B C D E F G H \n';
+			for (let i = 0; i < 8; i++) {
+				out += (8 - i) + ' ';
+				for (let j = 0; j < 8; j++) {
+					const piece = board[i][j];
+					const key = piece.PieceType + '-' + piece.PieceColor;
+					out += (UNICODE[key] || '?') + ' ';
+				}
+				out += (8 - i) + '\n';
+			}
+			out += '  A B C D E F G H \n';
+			return out;
+		}
+		</script>
+	</body>
+</html>

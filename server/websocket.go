@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {return true}}
 
 // type SafeConnections struct{
 // 	connections []*websocket.Conn
@@ -178,6 +178,24 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 					log.Printf("[ROOM%d] Player1 resigned — Player2 wins", gameID)
+				} else {
+
+					msg := TurnMessage{
+						Type:    "Turn",
+						Message: "Can't resign, must wait for opponent...",
+					}
+
+					messageJson, err := json.Marshal(msg)
+					if err != nil {
+						log.Printf("Error encoding JSON: %s", err)
+						break
+					}
+
+					err = safeRoom.Player1.Conn.WriteMessage(websocket.TextMessage, messageJson)
+					if err != nil {
+						break
+					}
+					continue
 				}
 			}else if safeRoom.Player2 != nil && conn == safeRoom.Player2.Conn {
 				if safeRoom.Player1 != nil{
