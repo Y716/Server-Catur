@@ -15,6 +15,7 @@ func ConnectServer(){
 	if PORT == "" {
 		PORT = "8080"
 	}
+	http.HandleFunc("/", WebHandler)
 	http.HandleFunc("/health", HealthHandler)
 	http.HandleFunc("/broadcast", broadcast)
 	http.HandleFunc("/games", GamesHandler)

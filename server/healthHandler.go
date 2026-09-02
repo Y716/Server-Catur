@@ -16,3 +16,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+func WebHandler(w http.ResponseWriter, r *http.Request){
+	http.ServeFile(w, r, "client/web/index.html")
+}
+
