@@ -50,6 +50,7 @@
 				statusEl.textContent = 'Connected. Waiting for opponent...';
 				logEl.textContent = '';
 				moveInputEl.disabled = false;
+				connectBtn.disabled = true;
 			};
 
 			// === 2. Message received from server (setara goroutine pendengarmu) ===
@@ -59,6 +60,9 @@
 				if (msg.type === 'Board') {
 					boardEl.textContent = renderBoard(msg.board);
 				} else if (msg.type === 'Turn') {
+					statusEl.textContent = msg.message;
+				} else if (msg.type === 'GameOver') {
+					ws.onclose();
 					statusEl.textContent = msg.message;
 				} else if (msg.type === 'Color') {
 					colorEl.textContent = msg.message;
@@ -71,6 +75,7 @@
 			ws.onclose = () => {
 				statusEl.textContent = 'Disconnected';
 				moveInputEl.disabled = true;
+				connectBtn.disabled = false;
 			};
 
 			ws.onerror = (err) => {

@@ -139,7 +139,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 				if safeRoom.Player2 != nil{
 
 					msg := TurnMessage{
-						Type:    "Turn",
+						Type:    "GameOver",
 						Message: "You win by forfeit",
 					}
 
@@ -159,7 +159,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 				if safeRoom.Player1 != nil{
 
 					msg := TurnMessage{
-						Type:    "Turn",
+						Type:    "GameOver",
 						Message: "You win by forfeit",
 					}
 
@@ -194,7 +194,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 				if safeRoom.Player2 != nil{
 
 					msg := TurnMessage{
-						Type:    "Turn",
+						Type:    "GameOver",
 						Message: "Your opponent has resign. You win by forfeit",
 					}
 
@@ -232,7 +232,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 				if safeRoom.Player1 != nil{
 
 					msg := TurnMessage{
-						Type:    "Turn",
+						Type:    "GameOver",
 						Message: "Your opponent has resign. You win by forfeit",
 					}
 
@@ -319,7 +319,7 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 
 							}
 							msg := TurnMessage{
-								Type:    "Turn",
+								Type:    "GameOver",
 								Message: winMessage,
 							}
 
