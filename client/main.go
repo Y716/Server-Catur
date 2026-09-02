@@ -55,6 +55,14 @@ func main(){
 					continue
 				}
 				fmt.Print(turnMsg.Message)	
+			case "Color":
+				var colorMsg server.ColorMessage
+				err = json.Unmarshal(jsonMsg, &colorMsg)
+				if err != nil {
+					log.Println("unmarshall:", err)
+					continue
+				}
+				fmt.Print(colorMsg.Message)	
 			case "Warning":
 				var warnMsg server.WarningMessage
 				err = json.Unmarshal(jsonMsg, &warnMsg)

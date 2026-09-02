@@ -60,6 +60,23 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 
 			log.Printf("[ROOM%d] Player2 connected (Black)", gameID )
 			safeRoom = room
+
+			msg := TurnMessage{
+				Type:    "Color",
+				Message: "You play as Black",
+			}
+
+			messageJson, err := json.Marshal(msg)
+			if err != nil {
+				log.Printf("Error encoding JSON: %s", err)
+				break
+			}
+
+			err = safeRoom.Player2.Conn.WriteMessage(websocket.TextMessage, messageJson)
+			if err != nil {
+				break
+			}
+
 			break
 
 		}
@@ -78,6 +95,20 @@ func broadcast(w http.ResponseWriter, r *http.Request) {
 		}
 		safeRoom = gameRooms[gameID]
 
+		msg := TurnMessage{
+			Type:    "Color",
+			Message: "You play as White",
+		}
+
+		messageJson, err := json.Marshal(msg)
+		if err != nil {
+			log.Printf("Error encoding JSON: %s", err)
+		}
+
+		err = safeRoom.Player1.Conn.WriteMessage(websocket.TextMessage, messageJson)
+		if err != nil {
+			log.Printf("Error Writing Message to Connection: %s", err)
+		}
 		log.Printf("[ROOM%d] Player1 connected (White)", gameID )
 	}
 	gameRoomsMu.Unlock()

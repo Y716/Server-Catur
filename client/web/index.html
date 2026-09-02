@@ -18,6 +18,7 @@
 			<button id="connectBtn">Connect</button>
 		</div>
 
+		<div id="color"></div>
 		<div id="status">Not connected</div>
 		<pre id="board"></pre>
 
@@ -30,9 +31,11 @@
 		let ws = null; // ini setara dengan variabel `conn` di client/main.go-mu
 
 		const boardEl = document.getElementById('board');
+		const colorEl = document.getElementById('color');
 		const statusEl = document.getElementById('status');
 		const moveInputEl = document.getElementById('moveInput');
 		const logEl = document.getElementById('log');
+		let myColor = "";
 
 		// === 1. Connect button clicked ===
 		document.getElementById('connectBtn').addEventListener('click', () => {
@@ -53,6 +56,9 @@
 					boardEl.textContent = renderBoard(msg.board);
 				} else if (msg.type === 'Turn') {
 					statusEl.textContent = msg.message;
+				} else if (msg.type === 'Color') {
+					colorEl.textContent = msg.message;
+					myColor = msg.message.split(" ")[3];
 				} else {
 					logEl.textContent = JSON.stringify(msg);
 				}
@@ -99,18 +105,36 @@
 		};
 
 		function renderBoard(board) {
-			let out = '  A B C D E F G H \n';
-			for (let i = 0; i < 8; i++) {
-				out += (8 - i) + ' ';
-				for (let j = 0; j < 8; j++) {
-					const piece = board[i][j];
-					const key = piece.PieceType + '-' + piece.PieceColor;
-					out += (UNICODE[key] || '?') + ' ';
+			if ( myColor === 'White' ){
+
+				let out = '  A B C D E F G H \n';
+				for (let i = 0; i < 8; i++) {
+					out += (8 - i) + ' ';
+					for (let j = 0; j < 8; j++) {
+						const piece = board[i][j];
+						const key = piece.PieceType + '-' + piece.PieceColor;
+						out += (UNICODE[key] || '?') + ' ';
+					}
+					out += (8 - i) + '\n';
 				}
-				out += (8 - i) + '\n';
+				out += '  A B C D E F G H \n';
+				return out;
+
+			} else {
+
+				let out = '  H G F E D C B A \n';
+				for (let i = 7; i >= 0; i--) {
+					out += (8 - i) + ' ';
+					for (let j = 7; j >= 0; j--) {
+						const piece = board[i][j];
+						const key = piece.PieceType + '-' + piece.PieceColor;
+						out += (UNICODE[key] || '?') + ' ';
+					}
+					out += (8 - i) + '\n';
+				}
+				out += '  H G F E D C B A \n';
+				return out;
 			}
-			out += '  A B C D E F G H \n';
-			return out;
 		}
 		</script>
 	</body>

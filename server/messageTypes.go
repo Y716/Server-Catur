@@ -26,3 +26,8 @@ type TurnMessage struct {
 	Type    string `json:"type"`
 	Message string `json:"message"`
 }
+
+type ColorMessage struct {
+	Type    string `json:"type"`
+	Message string `json:"message"`
+}
