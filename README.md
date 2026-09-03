@@ -7,7 +7,7 @@ Terminal Chess
 ![Chess CLI Demo](assets/Catur-Terminal-Client.gif)
 
 On Web
-![Chess CLI Demo](assets/Catur-Web-Client.gif)
+![Chess Web Demo](assets/Catur-Web-Client.gif)
 
 ## Diagram Architecture
 ```
