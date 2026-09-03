@@ -1,5 +1,6 @@
 # Server-Catur
 Playing chess... In your terminal! How cool is that?
+
 Built with Go and websockets, you can play chess against your friends. Or if terminal isn't your taste, you can still play it in your browser too. We support concurrent games so multiple games can run at the same time without slowing each other down.
 
 ## Preview
