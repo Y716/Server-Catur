@@ -13,7 +13,7 @@ import (
 	"github.com/Y716/Server-Catur/server"
 	"github.com/gorilla/websocket"
 )
-
+var color string
 func main(){
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/broadcast"}
 	log.Printf("Connecting to %s...\n", u.String())
@@ -46,7 +46,13 @@ func main(){
 					log.Println("unmarshall:", err)
 					continue
 				}
-				fmt.Printf("\n%s\n", board.PrintBoard(boardMsg.Board))
+				var isBlack bool
+				if color == "Black"{
+					isBlack = true
+				}else{
+					isBlack = false
+				}
+				fmt.Printf("\n%s\n", renderBoardForPlayer(boardMsg.Board, isBlack))
 
 			case "Turn":
 				var turnMsg server.TurnMessage
@@ -72,6 +78,8 @@ func main(){
 					log.Println("unmarshall:", err)
 					continue
 				}
+				color = strings.Split(colorMsg.Message, " ")[3]
+				
 				fmt.Print(colorMsg.Message)	
 
 			case "Warning":
@@ -140,4 +148,82 @@ func main(){
 		}
 
 	}
+}
+
+func flipBoard(b [8][8]board.Piece) [8][8]board.Piece{
+	var flipped [8][8]board.Piece
+	
+	for i := range b{
+		for j := range b{
+			flipped[i][j] = b[7-i][7-j]
+		}
+		
+
+	}
+	return flipped
+}
+
+func renderBoardForPlayer(b [8][8]board.Piece, isBlack bool) string{
+
+	var boardState strings.Builder
+	if isBlack{
+
+		b = flipBoard(b)
+		boardState.WriteString("  ")
+		for ch := 'H'; ch >= 'A'; ch--{
+			fmt.Fprintf(&boardState, "%c ", ch)
+		}
+		boardState.WriteString("\n")
+
+		for i := range b{
+			for j := range b{
+				if j == 0{
+					fmt.Fprintf(&boardState, "%d ", i+1)
+				}
+				uniCodePiece := board.GetUniCodePiece(b[i][j])
+				fmt.Fprintf(&boardState, "%s ", uniCodePiece)
+				if j == 7{
+					fmt.Fprintf(&boardState, "%d ", i+1)
+				}
+			}
+
+			fmt.Fprintln(&boardState, "")
+
+		}
+
+		boardState.WriteString("  ")
+		for ch := 'H'; ch >= 'A'; ch--{
+			fmt.Fprintf(&boardState, "%c ", ch)
+		}
+		boardState.WriteString("\n")
+	}else{
+		boardState.WriteString("  ")
+		for ch := 'A'; ch <= 'H'; ch++{
+			fmt.Fprintf(&boardState, "%c ", ch)
+		}
+		boardState.WriteString("\n")
+
+		for i := range b{
+			for j := range b{
+				if j == 0{
+					fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
+				}
+				uniCodePiece := board.GetUniCodePiece(b[i][j])
+				fmt.Fprintf(&boardState, "%s ", uniCodePiece)
+				if j == 7{
+					fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
+				}
+			}
+
+			fmt.Fprintln(&boardState, "")
+
+		}
+
+		boardState.WriteString("  ")
+		for ch := 'A'; ch <= 'H'; ch++{
+			fmt.Fprintf(&boardState, "%c ", ch)
+		}
+		boardState.WriteString("\n")
+	}
+	return boardState.String()
 }

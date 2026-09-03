@@ -57,7 +57,7 @@ func NewBoard() *[8][8]Piece {
 	return &Board
 }
 
-func getUniCodePiece(piece Piece) string {
+func GetUniCodePiece(piece Piece) string {
 	pieceMap := map[Piece]string{
 		{NoPieceType, NoPieceColor}: "\u25A1",
 		{Pawn, Black}:               "\u265F",
@@ -78,17 +78,13 @@ func getUniCodePiece(piece Piece) string {
 }
 func PrintBoard(Board [8][8]Piece) string { 
 	var boardState strings.Builder
-	boardState.WriteString("  ")
-	for ch := 'A'; ch <= 'H'; ch++{
-		fmt.Fprintf(&boardState, "%c ", ch)
-	}
-	boardState.WriteString("\n")
-	for i := 0; i < len(Board); i++ {
-		for j := 0; j < len(Board); j++ {
+
+	for i := range Board{
+		for j := range Board{
 			if j == 0{
 				fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
 			}
-			uniCodePiece := getUniCodePiece(Board[i][j])
+			uniCodePiece := GetUniCodePiece(Board[i][j])
 			fmt.Fprintf(&boardState, "%s ", uniCodePiece)
 			if j == 7{
 				fmt.Fprintf(&boardState, "%d ", (i*-1)+8)
@@ -98,11 +94,6 @@ func PrintBoard(Board [8][8]Piece) string {
 		fmt.Fprintln(&boardState, "")
 
 	}
-	fmt.Fprint(&boardState, "  ")
-	for ch := 'A'; ch <= 'H'; ch++{
-		fmt.Fprintf(&boardState, "%c ", ch)
-	}
-	fmt.Fprintln(&boardState, "")
 
 	return boardState.String()
 }
