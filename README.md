@@ -2,6 +2,10 @@
 Playing chess... In your terminal! How cool is that?
 Built with Go and websockets, you can play chess against your friends. Or if terminal isn't your taste, you can still play it in your browser too. We support concurrent games so multiple games can run at the same time without slowing each other down.
 
+## Preview
+Terminal Chess
+![Chess CLI Demo](assets/Catur-Terminal-Client.gif)
+
 ```
  ┌──────────────────┐         ┌──────────────────┐
  │   CLI Client     │         │   Web Client     │ 
@@ -130,4 +134,3 @@ plain JSON objects with a `type` field (`Move`, `Turn`, `Board`, `Resign`, `Game
 and server in sync, which also makes the protocol easy to inspect and debug (e.g. via 
 browser dev tools or `websocat`).
 
-![Chess CLI Demo](Catur Terminal Client2.gif)
