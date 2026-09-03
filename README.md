@@ -4,7 +4,7 @@ Built with Go and websockets, you can play chess against your friends. Or if ter
 
 ## Preview
 Terminal Chess
-![Chess CLI Demo](assets/Catur-Terminal-Client.gif)
+![Chess CLI Demo](assets/Catur-Terminal.gif)
 
 ## Diagram Architecture
 ```
