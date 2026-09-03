@@ -47,6 +47,7 @@ func main(){
 					continue
 				}
 				fmt.Printf("\n%s\n", board.PrintBoard(boardMsg.Board))
+
 			case "Turn":
 				var turnMsg server.TurnMessage
 				err = json.Unmarshal(jsonMsg, &turnMsg)
@@ -55,6 +56,15 @@ func main(){
 					continue
 				}
 				fmt.Print(turnMsg.Message)	
+			case "GameOver":
+				var turnMsg server.TurnMessage
+				err = json.Unmarshal(jsonMsg, &turnMsg)
+				if err != nil {
+					log.Println("unmarshall:", err)
+					continue
+				}
+				fmt.Print(turnMsg.Message)	
+
 			case "Color":
 				var colorMsg server.ColorMessage
 				err = json.Unmarshal(jsonMsg, &colorMsg)
@@ -63,6 +73,7 @@ func main(){
 					continue
 				}
 				fmt.Print(colorMsg.Message)	
+
 			case "Warning":
 				var warnMsg server.WarningMessage
 				err = json.Unmarshal(jsonMsg, &warnMsg)
