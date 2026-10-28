@@ -62,7 +62,7 @@ Web Chess
 1. go version 1.26.5 or up
 
 
-## How to run
+## Quick Start and Usage
 
 1. clone the repo
 
@@ -108,7 +108,7 @@ on Windows
 set PORT=8000 && go run main.go
 ```
 
-## Tech Stack & Why
+## Tech Stack, Why, & Motivation
 
 **Go** — Chosen for its strong concurrency primitives (goroutines, channels) and 
 simple, static-typed nature, which fit well with a networking-heavy backend project 
@@ -139,3 +139,27 @@ plain JSON objects with a `type` field (`Move`, `Turn`, `Board`, `Resign`, `Game
 and server in sync, which also makes the protocol easy to inspect and debug (e.g. via 
 browser dev tools or `websocat`).
 
+## 🤝 Contributing
+
+### Clone the repo
+
+```bash
+git clone https://github.com/Y716/Server-Catur.git
+cd Server-Catur
+```
+
+### Build the compiled binary
+
+```bash
+go build
+```
+
+### Run the test suite
+
+```bash
+go test ./...
+```
+
+### Submit a pull request
+
+If you'd like to contribute, please fork the repository and open a pull request to the `main` branch.
